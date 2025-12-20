@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+#
+# usage: ./run command [argument ...]
+#
+# Commands for halos-mdns-publisher development.
+#
+# See https://death.andgravity.com/run-sh
+# for an explanation of how it works and why it's useful.
+
+set -o nounset
+set -o pipefail
+set -o errexit
+
+# Change the current directory to the project root.
+PROJECT_ROOT=${0%/*}
+if [[ $0 != $PROJECT_ROOT && $PROJECT_ROOT != "" ]]; then
+  cd "$PROJECT_ROOT"
+fi
+readonly PROJECT_ROOT=$(pwd)
+
+################################################################################
+# Docker Commands
+
+function build {
+  #@ Build Docker image locally
+  #@ Category: Docker
+  echo "🐳 Building Docker image..."
+  docker build -t halos-mdns-publisher:dev .
+  echo "✅ Image built: halos-mdns-publisher:dev"
+}
+
+function build-multiarch {
+  #@ Build multi-arch Docker image (amd64 + arm64)
+  #@ Category: Docker
+  echo "🐳 Building multi-arch Docker image..."
+  docker buildx build --platform linux/amd64,linux/arm64 -t halos-mdns-publisher:dev .
+  echo "✅ Multi-arch image built"
+}
+
+################################################################################
+# Version Management Commands
+
+function bump-version {
+  #@ Bump version using bump2version (patch|minor|major)
+  #@ Category: Version
+  local BUMP_TYPE="${1:-}"
+
+  if [[ -z "$BUMP_TYPE" ]]; then
+    echo "Error: version bump type required"
+    echo "Usage: ./run bump-version [patch|minor|major]"
+    exit 1
+  fi
+
+  if [[ ! "$BUMP_TYPE" =~ ^(patch|minor|major)$ ]]; then
+    echo "Error: invalid bump type '$BUMP_TYPE'"
+    echo "Usage: ./run bump-version [patch|minor|major]"
+    exit 1
+  fi
+
+  echo "🔢 Bumping $BUMP_TYPE version..."
+
+  # Check if bumpversion is installed
+  if ! command -v bumpversion &> /dev/null; then
+    echo "Error: bumpversion not installed"
+    echo "Install with: pip install bump2version"
+    exit 1
+  fi
+
+  # Run bumpversion
+  bumpversion "$BUMP_TYPE"
+
+  echo "✅ Version bumped to $(cat VERSION)"
+  echo "📝 Changes have been committed automatically"
+}
+
+################################################################################
+# Development Setup
+
+function hooks-install {
+  #@ Install pre-commit hooks using lefthook
+  #@ Category: Setup
+  if ! command -v lefthook &> /dev/null; then
+    echo "Error: lefthook not found. Install with: brew install lefthook"
+    exit 1
+  fi
+  lefthook install
+  echo "✅ Pre-commit hooks installed"
+}
+
+function hooks-run {
+  #@ Run pre-commit hooks manually
+  #@ Category: Setup
+  if ! command -v lefthook &> /dev/null; then
+    echo "Error: lefthook not found. Install with: brew install lefthook"
+    exit 1
+  fi
+  lefthook run pre-commit
+}
+
+################################################################################
+# Help System
+
+function help {
+  #@ Show this help message
+  #@ Category: Help
+  echo "HaLOS mDNS Publisher - Development Commands"
+  echo "============================================"
+  echo ""
+  echo "Available commands:"
+  echo ""
+
+  # Extract function definitions and their help comments
+  awk '/^function / {
+    fname = $2
+    sub(/[({].*/, "", fname)
+    getline
+    if ($0 ~ /#@/) {
+      desc = $0
+      sub(/.*#@ /, "", desc)
+      sub(/ *$/, "", desc)
+      getline
+      if ($0 ~ /#@ Category:/) {
+        cat = $0
+        sub(/.*Category: /, "", cat)
+        sub(/ *$/, "", cat)
+        if (!seen[cat]++) categories[++cat_count] = cat
+        commands[cat, ++cmd_count[cat]] = fname
+        descriptions[cat, cmd_count[cat]] = desc
+      }
+    }
+  }
+  END {
+    for (i = 1; i <= cat_count; i++) {
+      cat = categories[i]
+      print "\n" cat ":"
+      for (j = 1; j <= cmd_count[cat]; j++) {
+        printf "  %-20s %s\n", commands[cat, j], descriptions[cat, j]
+      }
+    }
+  }' "$0"
+
+  echo ""
+  echo "Usage: ./run <command> [arguments...]"
+}
+
+################################################################################
+# Main dispatcher
+
+TIMEFORMAT=$'\nTask completed in %3lR'
+time "${@:-help}"

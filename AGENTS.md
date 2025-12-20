@@ -28,12 +28,22 @@ Containers can set `halos.subdomain=auth` to advertise `auth.halos.local`.
 
 - `HALOS_DOMAIN` - Base domain (default: `halos.local`)
 
-## Build Commands
+## Development Commands
 
 ```bash
-docker build -t halos-mdns-publisher .
-docker build --platform linux/arm64,linux/amd64 -t halos-mdns-publisher .
+./run help              # Show all commands
+./run build             # Build Docker image locally
+./run build-multiarch   # Build multi-arch image
+./run bump-version patch|minor|major  # Bump version
+./run hooks-install     # Install pre-commit hooks
 ```
+
+## Version Management
+
+Uses bump2version for version management:
+- `VERSION` file is the source of truth
+- `.bumpversion.cfg` configures bump2version
+- `./run bump-version patch` bumps and commits automatically
 
 ## CI/CD
 

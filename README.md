@@ -56,7 +56,7 @@ docker build -t halos-mdns-publisher .
 
 ## License
 
-BSD 3-Clause License - see [LICENSE](LICENSE)
+MIT License - see [LICENSE](LICENSE)
 
 ## Related
 
