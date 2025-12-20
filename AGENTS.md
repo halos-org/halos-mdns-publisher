@@ -35,7 +35,7 @@ Containers can set `halos.subdomain=auth` to advertise `auth.halos.local`.
 ./run build             # Build Docker image locally
 ./run build-multiarch   # Build multi-arch image
 ./run bump-version patch|minor|major  # Bump version
-./run hooks-install     # Install pre-commit hooks
+./run install-hooks     # Install pre-commit hooks
 ```
 
 ## Version Management

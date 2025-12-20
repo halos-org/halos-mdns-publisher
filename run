@@ -76,7 +76,7 @@ function bump-version {
 ################################################################################
 # Development Setup
 
-function hooks-install {
+function install-hooks {
   #@ Install pre-commit hooks using lefthook
   #@ Category: Setup
   if ! command -v lefthook &> /dev/null; then
@@ -87,7 +87,7 @@ function hooks-install {
   echo "✅ Pre-commit hooks installed"
 }
 
-function hooks-run {
+function run-hooks {
   #@ Run pre-commit hooks manually
   #@ Category: Setup
   if ! command -v lefthook &> /dev/null; then
