@@ -18,8 +18,9 @@ mkdir -p "$PID_DIR"
 # Get host IP address from default route
 get_host_ip() {
     # Get the IP of the interface used for the default route
-    ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K[0-9.]+' || \
-    hostname -I 2>/dev/null | awk '{print $1}' || \
+    # Use awk instead of grep -oP for BusyBox/Alpine compatibility
+    ip route get 1.1.1.1 2>/dev/null | awk '/src/ {for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' || \
+    hostname -i 2>/dev/null | awk '{print $1}' || \
     echo "127.0.0.1"
 }
 
