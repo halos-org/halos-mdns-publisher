@@ -55,7 +55,8 @@ start_publish() {
     echo "Starting: $fqdn -> $HOST_IP"
 
     # Start avahi-publish in background
-    avahi-publish -a "$fqdn" "$HOST_IP" &
+    # Use -R to skip reverse DNS entry (avoids collision with daemon's own entries)
+    avahi-publish -a -R "$fqdn" "$HOST_IP" &
     local pid=$!
     echo "$pid" > "$pid_file"
     echo "Started avahi-publish for $fqdn (PID: $pid)"
