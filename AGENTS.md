@@ -20,7 +20,7 @@ Native systemd service (Rust) that advertises container subdomains via Avahi/mDN
 
 1. Waits for Docker daemon to be available (graceful degradation)
 2. Scans running containers for `halos.subdomain` label
-3. Spawns `avahi-publish -a` subprocesses for each subdomain
+3. Spawns `avahi-publish-address --no-reverse` subprocesses for each subdomain
 4. Monitors Docker events via bollard async stream
 5. Starts/stops avahi-publish processes as containers start/stop
 6. Periodic health checks to restart failed avahi-publish processes

@@ -1,6 +1,6 @@
 //! Avahi publish subprocess management
 //!
-//! Manages `avahi-publish -a` subprocesses for mDNS record publication.
+//! Manages `avahi-publish-address` subprocesses for mDNS record publication.
 //! Each subdomain gets its own subprocess that is tracked by container ID.
 
 use std::collections::HashMap;
@@ -103,9 +103,10 @@ impl AvahiManager {
 
         info!("Publishing {} -> {}", fqdn, self.host_ip);
 
-        // Spawn avahi-publish process
-        let child = Command::new("avahi-publish")
-            .args(["-a", &fqdn, &self.host_ip])
+        // Spawn avahi-publish-address process with --no-reverse to avoid
+        // "Local name collision" errors when publishing subdomains of the host's domain
+        let child = Command::new("avahi-publish-address")
+            .args(["--no-reverse", &fqdn, &self.host_ip])
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::piped())
             .spawn()?;
