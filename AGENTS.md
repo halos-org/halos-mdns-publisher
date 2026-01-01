@@ -62,13 +62,14 @@ The domain is automatically derived from the system hostname: `<hostname>.local`
 ./run bumpversion major    # Bump major version (0.2.3 -> 1.0.0)
 ```
 
-After running, commit the changes:
+The command automatically commits the version change. Just push afterwards:
 ```bash
-git add VERSION Cargo.toml .bumpversion.cfg
-git commit -m "chore: bump version to $(cat VERSION)"
+git push
 ```
 
-**Version files that must stay synchronized:**
+**Note:** The working directory must be clean before bumping. This ensures atomic, isolated version commits.
+
+**Version files kept in sync by bumpversion:**
 - `VERSION` - Canonical source, read by CI
 - `Cargo.toml` - Rust package version
 

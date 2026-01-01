@@ -156,12 +156,11 @@ function bumpversion {
     exit 1
   fi
 
-  command bumpversion --allow-dirty "$BUMP_TYPE"
+  command bumpversion "$BUMP_TYPE"
 
-  echo "Version bumped successfully"
-  echo "Remember to commit the version changes:"
-  echo "   git add VERSION Cargo.toml .bumpversion.cfg"
-  echo "   git commit -m \"chore: bump version to \$(cat VERSION)\""
+  echo "Version bumped and committed successfully"
+  echo "New version: $(cat VERSION)"
+  echo "Push with: git push"
 }
 
 ################################################################################
