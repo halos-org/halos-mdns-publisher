@@ -15,6 +15,9 @@ pub enum PublisherError {
 
     #[error("Failed to get host IP: {0}")]
     HostIp(String),
+
+    #[error("Netlink error: {0}")]
+    Netlink(#[from] rtnetlink::Error),
 }
 
 pub type Result<T> = std::result::Result<T, PublisherError>;
