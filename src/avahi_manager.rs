@@ -18,7 +18,6 @@ use crate::error::Result;
 /// Returns (added, removed) where:
 /// - added: IPs in new but not in old
 /// - removed: IPs in old but not in new
-#[allow(dead_code)] // TODO: remove when integrated into main.rs
 pub fn compute_ip_diff(old: &[HostIp], new: &[HostIp]) -> (Vec<HostIp>, Vec<HostIp>) {
     use std::collections::HashSet;
 
@@ -126,7 +125,6 @@ impl AvahiManager {
     }
 
     /// Get all host IP addresses being advertised
-    #[allow(dead_code)] // TODO: remove when integrated into main.rs
     pub fn host_ips(&self) -> &[HostIp] {
         &self.host_ips_vec
     }
@@ -389,7 +387,6 @@ impl AvahiManager {
     /// Update the set of host IP addresses and restart affected publications
     ///
     /// This should be called when the host's IP set changes (interface up/down).
-    #[allow(dead_code)] // TODO: remove when integrated into main.rs
     pub async fn update_ips(&mut self, new_ips: Vec<HostIp>) {
         let (added, removed) = compute_ip_diff(&self.host_ips_vec, &new_ips);
 

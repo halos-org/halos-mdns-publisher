@@ -6,7 +6,6 @@ use std::process::Command;
 use crate::error::{PublisherError, Result};
 
 /// A host IP address with its interface name
-#[allow(dead_code)] // TODO: remove when integrated into main.rs
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct HostIp {
     /// The IP address
@@ -18,7 +17,6 @@ pub struct HostIp {
 /// Check if an interface should have its IP published via mDNS
 ///
 /// Excludes loopback, Docker bridges, and virtual ethernet interfaces.
-#[allow(dead_code)] // TODO: remove when integrated
 pub fn is_publishable_interface(name: &str) -> bool {
     // Exclude loopback
     if name == "lo" {
@@ -42,7 +40,6 @@ pub fn is_publishable_interface(name: &str) -> bool {
 /// Check if an IP address should be published via mDNS
 ///
 /// Excludes loopback and link-local addresses.
-#[allow(dead_code)] // TODO: remove when integrated
 pub fn is_publishable_ip(ip: &Ipv4Addr) -> bool {
     // Exclude loopback (127.x.x.x)
     if ip.is_loopback() {
@@ -58,7 +55,6 @@ pub fn is_publishable_ip(ip: &Ipv4Addr) -> bool {
 /// Get all routable host IP addresses from non-Docker interfaces
 ///
 /// Filters out loopback, link-local, and Docker bridge interfaces.
-#[allow(dead_code)] // TODO: remove when integrated into main.rs
 pub fn get_host_ips() -> Result<Vec<HostIp>> {
     // Use `ip -j addr show` to get JSON output of all interfaces
     let output = Command::new("ip")

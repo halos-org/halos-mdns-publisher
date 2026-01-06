@@ -16,7 +16,7 @@ use tokio::sync::mpsc;
 use tokio::time::sleep;
 use tracing::{debug, error, info, warn};
 
-use crate::config::{get_host_ip, HostIp};
+use crate::config::get_host_ip;
 use crate::error::Result;
 
 /// Debounce duration for IP changes (handles rapid changes during DHCP negotiation)
@@ -29,30 +29,6 @@ pub struct IpChangeEvent {
     pub old_ip: String,
     /// The new IP address
     pub new_ip: String,
-}
-
-/// Event indicating the set of host IPs has changed
-#[allow(dead_code)] // TODO: remove when integrated into main.rs
-#[derive(Debug, Clone)]
-pub struct IpSetChangeEvent {
-    /// The previous set of IP addresses
-    pub old_ips: Vec<HostIp>,
-    /// The new set of IP addresses
-    pub new_ips: Vec<HostIp>,
-}
-
-/// Start monitoring for IP address changes (multi-IP version)
-///
-/// Returns a receiver that yields `IpSetChangeEvent` when the host's IP set changes.
-/// The monitor runs as a background task and handles debouncing internally.
-#[allow(dead_code)] // TODO: remove when integrated into main.rs
-pub async fn start_ip_set_monitor(
-    initial_ips: Vec<HostIp>,
-) -> Result<mpsc::UnboundedReceiver<IpSetChangeEvent>> {
-    // TODO: implement
-    let (tx, rx) = mpsc::unbounded_channel();
-    let _ = (initial_ips, tx);
-    Ok(rx)
 }
 
 /// Start monitoring for IP address changes
@@ -229,92 +205,5 @@ mod tests {
         let debug_str = format!("{:?}", event);
         assert!(debug_str.contains("192.168.1.1"));
         assert!(debug_str.contains("192.168.1.2"));
-    }
-
-    // === Tests for IpSetChangeEvent ===
-
-    fn make_host_ips(ips: &[(&str, &str)]) -> Vec<HostIp> {
-        ips.iter()
-            .map(|(ip, iface)| HostIp {
-                ip: ip.to_string(),
-                interface: iface.to_string(),
-            })
-            .collect()
-    }
-
-    #[test]
-    fn test_ip_set_change_event_fields() {
-        let old_ips = make_host_ips(&[("10.0.0.1", "eth0")]);
-        let new_ips = make_host_ips(&[("10.0.0.1", "eth0"), ("192.168.4.1", "wlan0ap")]);
-
-        let event = IpSetChangeEvent {
-            old_ips: old_ips.clone(),
-            new_ips: new_ips.clone(),
-        };
-
-        assert_eq!(event.old_ips.len(), 1);
-        assert_eq!(event.new_ips.len(), 2);
-        assert_eq!(event.old_ips[0].ip, "10.0.0.1");
-        assert_eq!(event.new_ips[1].ip, "192.168.4.1");
-    }
-
-    #[test]
-    fn test_ip_set_change_event_clone() {
-        let event = IpSetChangeEvent {
-            old_ips: make_host_ips(&[("10.0.0.1", "eth0")]),
-            new_ips: make_host_ips(&[("10.0.0.2", "eth0")]),
-        };
-        let cloned = event.clone();
-
-        assert_eq!(event.old_ips.len(), cloned.old_ips.len());
-        assert_eq!(event.new_ips.len(), cloned.new_ips.len());
-        assert_eq!(event.old_ips[0].ip, cloned.old_ips[0].ip);
-    }
-
-    #[test]
-    fn test_ip_set_change_event_debug() {
-        let event = IpSetChangeEvent {
-            old_ips: make_host_ips(&[("192.168.1.1", "eth0")]),
-            new_ips: make_host_ips(&[("192.168.1.2", "eth0")]),
-        };
-        let debug_str = format!("{:?}", event);
-        assert!(debug_str.contains("192.168.1.1"));
-        assert!(debug_str.contains("192.168.1.2"));
-    }
-
-    #[test]
-    fn test_ip_set_change_event_empty_to_populated() {
-        let event = IpSetChangeEvent {
-            old_ips: vec![],
-            new_ips: make_host_ips(&[("10.0.0.1", "eth0")]),
-        };
-
-        assert!(event.old_ips.is_empty());
-        assert_eq!(event.new_ips.len(), 1);
-    }
-
-    #[test]
-    fn test_ip_set_change_event_populated_to_empty() {
-        let event = IpSetChangeEvent {
-            old_ips: make_host_ips(&[("10.0.0.1", "eth0")]),
-            new_ips: vec![],
-        };
-
-        assert_eq!(event.old_ips.len(), 1);
-        assert!(event.new_ips.is_empty());
-    }
-
-    #[test]
-    fn test_ip_set_change_event_multiple_changes() {
-        let event = IpSetChangeEvent {
-            old_ips: make_host_ips(&[("10.84.77.20", "eth0"), ("10.84.77.22", "wlan0")]),
-            new_ips: make_host_ips(&[("10.84.77.20", "eth0"), ("192.168.4.1", "wlan0ap")]),
-        };
-
-        assert_eq!(event.old_ips.len(), 2);
-        assert_eq!(event.new_ips.len(), 2);
-        // eth0 IP unchanged, wlan0 removed, wlan0ap added
-        assert!(event.old_ips.iter().any(|ip| ip.interface == "wlan0"));
-        assert!(event.new_ips.iter().any(|ip| ip.interface == "wlan0ap"));
     }
 }
