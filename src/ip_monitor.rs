@@ -73,7 +73,10 @@ async fn run_ip_monitor_linux(
 ) -> Result<()> {
     use crate::config::get_host_ip;
     use futures_util::StreamExt;
+    use netlink_packet_core::NetlinkPayload;
     use netlink_packet_route::RouteNetlinkMessage;
+    use netlink_sys::{AsyncSocket, SocketAddr};
+    use rtnetlink::constants::RTMGRP_IPV4_IFADDR;
     use rtnetlink::new_connection;
     use tracing::debug;
 
@@ -100,7 +103,11 @@ async fn run_ip_monitor_linux(
         tx: &mpsc::UnboundedSender<IpChangeEvent>,
     ) -> Result<()> {
         // Create connection to receive address change notifications
-        let (conn, _handle, mut messages) = new_connection()?;
+        let (mut conn, _handle, mut messages) = new_connection()?;
+
+        // Subscribe to IPv4 address change multicast group
+        let addr = SocketAddr::new(0, RTMGRP_IPV4_IFADDR);
+        conn.socket_mut().socket_mut().bind(&addr)?;
 
         // Spawn the connection handler (required for messages to flow)
         tokio::spawn(conn);
@@ -123,15 +130,18 @@ async fn run_ip_monitor_linux(
                     match result {
                         Some((message, _addr)) => {
                             // Filter for address-related messages
-                            match message.payload {
-                                RouteNetlinkMessage::NewAddress(_) |
-                                RouteNetlinkMessage::DelAddress(_) => {
-                                    debug!("Received address change notification");
-                                    pending_check = true;
-                                    last_event_time = std::time::Instant::now();
-                                }
-                                _ => {
-                                    // Ignore other message types
+                            // The payload is wrapped in NetlinkPayload enum
+                            if let NetlinkPayload::InnerMessage(inner) = message.payload {
+                                match inner {
+                                    RouteNetlinkMessage::NewAddress(_)
+                                    | RouteNetlinkMessage::DelAddress(_) => {
+                                        debug!("Received address change notification");
+                                        pending_check = true;
+                                        last_event_time = std::time::Instant::now();
+                                    }
+                                    _ => {
+                                        // Ignore other message types
+                                    }
                                 }
                             }
                         }

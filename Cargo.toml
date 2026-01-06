@@ -34,7 +34,9 @@ gethostname = "1.0"
 # Netlink for IP address monitoring (Linux only)
 [target.'cfg(target_os = "linux")'.dependencies]
 rtnetlink = "0.20"
-netlink-packet-route = "0.22"
+netlink-packet-core = "0.8"
+netlink-packet-route = "0.28"
+netlink-sys = "0.8"
 
 [dev-dependencies]
 tokio-test = "0.4"
