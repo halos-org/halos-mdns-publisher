@@ -1,6 +1,6 @@
 [Unit]
 Description=HaLOS mDNS Subdomain Publisher
-Documentation=https://github.com/hatlabs/halos-mdns-publisher
+Documentation=https://github.com/halos-org/halos-mdns-publisher
 After=network.target avahi-daemon.service
 Wants=avahi-daemon.service
 # Note: does NOT require docker.service - graceful degradation
