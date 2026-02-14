@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: halos-mdns-publisher
 Upstream-Contact: Hat Labs Ltd <info@hatlabs.fi>
-Source: https://github.com/hatlabs/halos-mdns-publisher
+Source: https://github.com/halos-org/halos-mdns-publisher
 
 Files: *
 Copyright: 2024 Hat Labs Ltd <info@hatlabs.fi>

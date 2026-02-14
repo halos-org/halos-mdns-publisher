@@ -1,11 +1,11 @@
 [package]
 name = "halos-mdns-publisher"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 authors = ["Hat Labs Ltd <info@hatlabs.fi>"]
 description = "Native systemd service that advertises container subdomains via mDNS"
 license = "MIT"
-repository = "https://github.com/hatlabs/halos-mdns-publisher"
+repository = "https://github.com/halos-org/halos-mdns-publisher"
 
 [dependencies]
 # Async runtime
