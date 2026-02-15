@@ -100,5 +100,5 @@ Uses shared-workflows for Debian package building:
 ## Related Repos
 
 - `halos-core-containers` - Previously contained container-based mdns-publisher
-- `halos-distro` - Parent workspace
+- `halos` - Parent workspace
 - `homarr-container-adapter` - Similar Rust service pattern
