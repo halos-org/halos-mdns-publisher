@@ -116,5 +116,5 @@ MIT License - see [LICENSE](LICENSE)
 
 ## Related
 
-- [HaLOS Distro](https://github.com/halos-org/halos-distro) - HaLOS workspace
+- [HaLOS Distro](https://github.com/halos-org/halos) - HaLOS workspace
 - [HaLOS Core Containers](https://github.com/halos-org/halos-core-containers) - Core container definitions
