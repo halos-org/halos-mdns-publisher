@@ -55,7 +55,7 @@ ${PACKAGE_NAME} (${DEB_VERSION}) unstable; urgency=medium
 
   * Build from source
 
- -- Hat Labs <info@hatlabs.fi>  $(date -R)
+ -- Matti Airas <matti.airas@hatlabs.fi>  $(date -R)
 CHANGELOG_EOF
         fi
 
