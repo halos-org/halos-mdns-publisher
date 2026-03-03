@@ -1,6 +1,6 @@
 #!/bin/bash
 # Rename .deb packages with distro+component suffix
-# This script handles architecture-specific packages (arm64)
+# This script handles the transitional package (arch: all)
 
 set -e
 
@@ -16,9 +16,9 @@ done
 
 PACKAGE_NAME="${PACKAGE_NAME:-halos-mdns-publisher}"
 
-# Find the .deb file - arm64 architecture for this Rust package
-OLD_NAME="${PACKAGE_NAME}_${VERSION}_arm64.deb"
-NEW_NAME="${PACKAGE_NAME}_${VERSION}_arm64+${DISTRO}+${COMPONENT}.deb"
+# Find the .deb file - arch: all for transitional package
+OLD_NAME="${PACKAGE_NAME}_${VERSION}_all.deb"
+NEW_NAME="${PACKAGE_NAME}_${VERSION}_all+${DISTRO}+${COMPONENT}.deb"
 
 if [ -f "$OLD_NAME" ]; then
     echo "Renaming package: $OLD_NAME -> $NEW_NAME"
