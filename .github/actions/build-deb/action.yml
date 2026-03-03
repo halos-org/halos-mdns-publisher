@@ -1,33 +1,33 @@
 name: 'Build Debian Package'
-description: 'Build arm64 .deb package for Raspberry Pi using cross-compilation'
+description: 'Build architecture-independent .deb for transitional package'
 
 runs:
   using: 'composite'
   steps:
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Cache Docker layers
-      uses: actions/cache@v4
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-rust-debtools-${{ hashFiles('docker/Dockerfile.debtools') }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-rust-debtools-
-
-    - name: Build debtools Docker image
+    - name: Install build dependencies
       shell: bash
       run: |
-        cd docker
-        docker buildx build \
-          --file Dockerfile.debtools \
-          --tag rust-debtools:latest \
-          --cache-from type=local,src=/tmp/.buildx-cache \
-          --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
-          --load \
-          .
-        cd ..
+        sudo apt-get update
+        sudo apt-get install -y dpkg-dev debhelper build-essential
+
+    - name: Generate changelog if missing
+      shell: bash
+      run: |
+        if [ ! -f debian/changelog ]; then
+          VERSION=$(cat VERSION)
+          cat > debian/changelog <<EOF
+        halos-mdns-publisher (${VERSION}-1) unstable; urgency=medium
+
+          * Transitional package
+
+         -- Matti Airas <matti.airas@hatlabs.fi>  $(date -R)
+        EOF
+        fi
 
     - name: Build Debian package
       shell: bash
-      run: .github/scripts/build-deb-package.sh
+      run: |
+        dpkg-buildpackage -b -uc -us
+        mv ../*.deb ./
+        echo "Built packages:"
+        ls -lh *.deb

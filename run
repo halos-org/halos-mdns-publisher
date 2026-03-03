@@ -2,7 +2,7 @@
 #
 # usage: ./run command [argument ...]
 #
-# Commands for halos-mdns-publisher development.
+# Commands for halos-mdns-publisher (transitional package).
 #
 # See https://death.andgravity.com/run-sh
 # for an explanation of how it works and why it's useful.
@@ -18,103 +18,48 @@ if [[ $0 != $PROJECT_ROOT && $PROJECT_ROOT != "" ]]; then
 fi
 readonly PROJECT_ROOT=$(pwd)
 
-# Docker image for Linux builds
-DOCKER_IMAGE="rust-debtools:latest"
-
-# Helper function to run cargo commands in Docker
-function docker-cargo {
-  docker run --rm \
-    -v "$(pwd):/build" \
-    -w /build \
-    "$DOCKER_IMAGE" \
-    "$@"
-}
+# Docker image for building
+DOCKER_IMAGE="debtools:latest"
 
 # Helper function to ensure Docker image exists
 function ensure-docker-image {
   if ! docker image inspect "$DOCKER_IMAGE" &>/dev/null; then
-    echo "🐳 Building Docker image for Linux builds..."
+    echo "Building Docker image..."
     docker build -t "$DOCKER_IMAGE" -f docker/Dockerfile.debtools docker/
-    echo "✅ Docker image built"
   fi
 }
 
-################################################################################
-# Rust Development Commands (all run in Docker for Linux compatibility)
+# Generate debian/changelog if it doesn't exist
+function ensure-changelog {
+  if [[ ! -f debian/changelog ]]; then
+    local version
+    version=$(cat VERSION)
+    cat > debian/changelog <<EOF
+halos-mdns-publisher (${version}-1) unstable; urgency=medium
 
-function build {
-  #@ Build Rust binary (debug mode, x86_64 Linux)
-  #@ Category: Build
-  ensure-docker-image
-  echo "🔨 Building halos-mdns-publisher (debug, x86_64 Linux)..."
-  docker-cargo cargo build
-  echo "✅ Build complete: target/debug/halos-mdns-publisher"
-}
+  * Transitional package
 
-function build-release {
-  #@ Build Rust binary (release mode, x86_64 Linux)
-  #@ Category: Build
-  ensure-docker-image
-  echo "🔨 Building halos-mdns-publisher (release, x86_64 Linux)..."
-  docker-cargo cargo build --release
-  echo "✅ Build complete: target/release/halos-mdns-publisher"
-}
-
-function test {
-  #@ Run all tests (in Docker)
-  #@ Category: Test
-  ensure-docker-image
-  echo "🧪 Running tests..."
-  docker-cargo cargo test
-}
-
-function check {
-  #@ Run cargo check (fast compile check, in Docker)
-  #@ Category: Test
-  ensure-docker-image
-  echo "🔍 Running cargo check..."
-  docker-cargo cargo check
-}
-
-function clippy {
-  #@ Run clippy linter (in Docker)
-  #@ Category: Test
-  ensure-docker-image
-  echo "📎 Running clippy..."
-  docker-cargo cargo clippy --all-targets --all-features -- -D warnings
-}
-
-function fmt {
-  #@ Format code with rustfmt
-  #@ Category: Test
-  echo "🎨 Formatting code..."
-  # rustfmt can run natively - it doesn't need Linux-specific dependencies
-  cargo fmt
-}
-
-function fmt-check {
-  #@ Check code formatting
-  #@ Category: Test
-  echo "🔍 Checking code format..."
-  # rustfmt can run natively - it doesn't need Linux-specific dependencies
-  cargo fmt --check
-}
-
-function lint {
-  #@ Run all linting (fmt check + clippy in Docker)
-  #@ Category: Test
-  fmt-check
-  clippy
+ -- Matti Airas <matti.airas@hatlabs.fi>  $(date -R)
+EOF
+  fi
 }
 
 ################################################################################
 # Debian Packaging
 
 function build-deb {
-  #@ Build Debian package for arm64
+  #@ Build Debian package in Docker
   #@ Category: Package
-  echo "📦 Building Debian package..."
-  .github/scripts/build-deb-package.sh
+  ensure-docker-image
+  ensure-changelog
+  echo "Building Debian package..."
+  docker run --rm \
+    -v "$(pwd):/build" \
+    -w /build \
+    "$DOCKER_IMAGE" \
+    bash -c 'dpkg-buildpackage -b -uc -us && mv ../*.deb ./'
+  echo "Built packages:"
+  ls -lh *.deb
 }
 
 function check-lintian {
@@ -123,13 +68,13 @@ function check-lintian {
   local deb_file
   deb_file=$(ls -t *.deb 2>/dev/null | head -1)
   if [[ -z "$deb_file" ]]; then
-    echo "❌ No .deb file found. Run 'build-deb' first."
+    echo "No .deb file found. Run 'build-deb' first."
     exit 1
   fi
-  echo "🔍 Running lintian on $deb_file..."
+  echo "Running lintian on $deb_file..."
   docker run --rm -v "$(pwd):/build" -w /build "$DOCKER_IMAGE" \
     lintian --info --display-info --fail-on error,warning "$deb_file"
-  echo "✅ Lintian check passed"
+  echo "Lintian check passed"
 }
 
 ################################################################################
@@ -143,17 +88,7 @@ function hooks-install {
     exit 1
   fi
   lefthook install
-  echo "✅ Pre-commit hooks installed"
-}
-
-function hooks-run {
-  #@ Run pre-commit hooks manually
-  #@ Category: Setup
-  if ! command -v lefthook &> /dev/null; then
-    echo "Error: lefthook not found. Install with: brew install lefthook"
-    exit 1
-  fi
-  lefthook run pre-commit
+  echo "Pre-commit hooks installed"
 }
 
 ################################################################################
@@ -197,10 +132,8 @@ function bumpversion {
 function help {
   #@ Show this help message
   #@ Category: Help
-  echo "HaLOS mDNS Publisher - Development Commands"
-  echo "============================================"
-  echo ""
-  echo "NOTE: This is a Linux-only project. Build/test commands run in Docker."
+  echo "HaLOS mDNS Publisher - Transitional Package Commands"
+  echo "===================================================="
   echo ""
   echo "Available commands:"
   echo ""
