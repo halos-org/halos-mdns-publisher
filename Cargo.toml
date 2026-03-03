@@ -1,48 +1,8 @@
 [package]
 name = "halos-mdns-publisher"
-version = "0.2.5"
+version = "1.0.0"
 edition = "2021"
 authors = ["Matti Airas <matti.airas@hatlabs.fi>"]
-description = "Native systemd service that advertises container subdomains via mDNS"
+description = "Transitional package (mDNS publisher removed)"
 license = "MIT"
 repository = "https://github.com/halos-org/halos-mdns-publisher"
-
-[dependencies]
-# Async runtime
-tokio = { version = "1", features = ["full", "process", "signal"] }
-
-# Docker API client
-bollard = "0.18"
-
-# Async stream utilities
-futures-util = "0.3"
-
-# Error handling
-anyhow = "1"
-thiserror = "2"
-
-# JSON parsing for ip command output
-serde_json = "1"
-
-# Logging
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-
-# CLI
-clap = { version = "4", features = ["derive"] }
-
-# System info
-gethostname = "1.0"
-
-# Netlink for IP address monitoring
-rtnetlink = "0.20"
-netlink-packet-core = "0.8"
-netlink-packet-route = "0.28"
-netlink-sys = "0.8"
-
-[dev-dependencies]
-tokio-test = "0.4"
-
-[[bin]]
-name = "halos-mdns-publisher"
-path = "src/main.rs"
